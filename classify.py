@@ -2,23 +2,33 @@
 then write results.json and an easy-to-scan results.html.
 
 Usage:
-    python classify.py            # uses the larger, more accurate "clef" model
-    python classify.py clef-flash # faster / cheaper model
+    python classify.py                     # comments.json -> results.json/.html
+    python classify.py comments-v2.json    # -> results-v2.json/.html
+    python classify.py --model clef-flash  # faster / cheaper model
 
 Credentials are read from cloud-flare.local.sh (never put them in code).
 """
+import argparse
 import html
 import json
+import os
 import re
 import sys
 import time
 import urllib.error
 import urllib.request
 
-MODEL = sys.argv[1] if len(sys.argv) > 1 else "clef"
-COMMENTS_FILE = "comments.json"
-RESULTS_JSON = "results.json"
-RESULTS_HTML = "results.html"
+parser = argparse.ArgumentParser()
+parser.add_argument("comments_file", nargs="?", default="comments.json")
+parser.add_argument("--model", default="clef")
+args = parser.parse_args()
+
+MODEL = args.model
+COMMENTS_FILE = args.comments_file
+# comments.json -> results.json ; comments-v2.json -> results-v2.json
+_suffix = os.path.splitext(os.path.basename(COMMENTS_FILE))[0].replace("comments", "")
+RESULTS_JSON = f"results{_suffix}.json"
+RESULTS_HTML = f"results{_suffix}.html"
 
 INSTRUCTIONS = (
     "Classify `comment`, a post written by a student in the discussion forum "
